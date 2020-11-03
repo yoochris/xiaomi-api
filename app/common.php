@@ -43,6 +43,7 @@ function getValByKey(string $key, array $arr, $default = false)
  */
 function cms_login(array $param)
 {
+    dump($param);
     // 获取参数
     $data = getValByKey('data', $param);
     if (!$data) return false;
@@ -55,6 +56,7 @@ function cms_login(array $param)
     $expire = getValByKey('expire', $param, 0);
 
     $CacheClass = \think\facade\Cache::store(config('cms.' . $tag . '.token.store'));
+    dump($CacheClass);
     // 生成token
     $token = sha1(md5(uniqid(md5(microtime(true)), true)));
     // 拿到当前用户数据

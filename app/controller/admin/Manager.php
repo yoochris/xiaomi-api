@@ -141,7 +141,12 @@ class Manager extends Base
     // 管理员登录
     public function login(Request $request)
     {
-						var_dump($request);
+        // 先Base->__construct(object(Request))构造函数执行   app\controller\common\Base.php
+        // 自动验证$this->autoValidateAction()               app\controller\common\Base.php
+        // login场景验证，执行sceneLogin()                    app\validateManager.php
+        // checklogin() 如果通过，返回true                    app\validate\BaseValidate.php
+        // 以上流程没走完会return
+
         $user = cms_login([
             'data' => $request->UserModel
         ]);
