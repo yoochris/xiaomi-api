@@ -43,7 +43,6 @@ function getValByKey(string $key, array $arr, $default = false)
  */
 function cms_login(array $param)
 {
-    dump($param);
     // 获取参数
     $data = getValByKey('data', $param);
     if (!$data) return false;
@@ -55,12 +54,20 @@ function cms_login(array $param)
     // 登录有效时间 0为永久
     $expire = getValByKey('expire', $param, 0);
 
+    // 切换缓存 当前测试到file缓存
+    // Facade功能可以让类无需实例化而直接进行静态方式调用
+    // config('cms.manager.token.store') => file 见配置文件config/cms文件
     $CacheClass = \think\facade\Cache::store(config('cms.' . $tag . '.token.store'));
-    dump($CacheClass);
+
     // 生成token
+    // microtime() 函数返回当前 Unix 时间戳的微秒数。参数当设置为 TRUE 时，规定函数应该返回一个浮点数(带小数如1604460059.3435)，否则返回一个字符串。
+    // uniqid() 函数基于以微秒计的当前时间，生成一个唯一的 ID。第二个参数设置为 true，则在返回值的末尾添加额外的熵（使用组合线形同余数生成程序），这样可以结果的唯一性更好。
+    // sha1() 函数计算字符串的 SHA-1 散列。
     $token = sha1(md5(uniqid(md5(microtime(true)), true)));
+
     // 拿到当前用户数据
     $user = is_object($data) ?  $data->toArray() : $data;
+
     // 获取之前并删除token
     // $beforeToken = $CacheClass->get($tag.'_'.$user['id']);
     // // 删除之前token对应的用户信息
@@ -72,10 +79,12 @@ function cms_login(array $param)
     //     ]);
     // }
     // 存储token - 用户数据
+    // set('名字', '数据', '有效期')
     $CacheClass->set($tag . '_' . $token, $user, $expire);
     // 存储用户id - token
     $CacheClass->set($tag . '_' . $user['id'], $token, $expire);
     // 隐藏密码
+    // unset() 销毁指定的变量。
     if (!$password) unset($user['password']);
     // 返回token
     $user['token'] = $token;

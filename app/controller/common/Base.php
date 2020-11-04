@@ -75,12 +75,14 @@ class Base extends BaseController
         $action = $this->Cinfo['action'];
         // 判断是否需要验证
         // 系统已开启自动验证，并且当前方法不在 不需要验证的方法 里面（就是这个方法需要验证）
+
         if ($this->autoValidateCheck && !in_array($action, $this->excludeValidateCheck)) {
             // 获取验证实例
             // "app\controller\common/../../validate/admin\Manager.php" !=> "app\validate\Manager.php"
             // 假如这个验证文件存在
             // file_exists() 函数检查文件或目录是否存在。如果指定的文件或目录存在则返回 true，否则返回 false
             $validateName = file_exists(__APP_PATH__ . 'validate/' . $this->Cinfo['Cpath'] . '.php') ? $this->Cinfo['Cpath'] : $this->Cinfo['Cname'];
+
             $validate = app('app\validate\\' . $validateName);
 
             // 获取验证场景
@@ -92,7 +94,7 @@ class Base extends BaseController
 
             // 开始验证
             $params = request()->param();
-            if (!$validate->scene($scene)->check($params)) { // 走了login场景验证
+            if (!$validate->scene($scene)->check($params)) { // $scene = login,因此走了login场景验证
                 // 抛出异常
                 ApiException($validate->getError());
             }

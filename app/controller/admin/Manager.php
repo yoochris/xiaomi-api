@@ -147,9 +147,11 @@ class Manager extends Base
         // checklogin() 如果通过，返回true                    app\validate\BaseValidate.php
         // 以上流程没走完会return
 
+        // 获取用户信息
         $user = cms_login([
             'data' => $request->UserModel
         ]);
+
         // 获取当前用户所有权限
         $data = $this->M->where('id', $user['id'])->with([
             'role' => function ($query) {
@@ -162,6 +164,7 @@ class Manager extends Base
                 ]);
             }
         ])->find()->toArray();
+
         $data['token'] = $user['token'];
 
         $data['tree'] = [];
@@ -169,19 +172,25 @@ class Manager extends Base
         $data['ruleNames'] = [];
         // 无限级分类
         $rules = $data['role']['rules'];
+
         // 超级管理员
         if ($data['super'] === 1) {
             $rules = \app\model\admin\Rule::where('status', 1)->select()->toArray();
         }
+
+        // 做出该管理员对应的菜单导航
+        // rule_id = 0 为一级导航 rule_id为非0的为数字对应的二级导航
         $data['tree'] = list_to_tree2($rules, 'rule_id', 'child', 0, function ($item) {
             return $item['menu'] === 1;
         });
+
         // 权限规则数组
         foreach ($data['role']['rules'] as $v) {
             if ($v['condition'] && $v['name']) {
                 $data['ruleNames'][] = $v['name'];
             }
         }
+
         return showSuccess($data);
     }
 
